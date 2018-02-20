@@ -5,15 +5,12 @@ module for loading local datasets quickly
 import os
 import numpy as np
 import pandas as pd
-import six
 
 import fitsio
-from astropy.io import fits
 from astropy.table import Table
 import astropy.coordinates as coord
 import astropy.units as u
 
-from . import tools
 from ..utils import cached_property
 
 __all__ = [
