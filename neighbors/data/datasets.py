@@ -20,7 +20,8 @@ __all__ = [
 ]
 
 # TODO: auto-download if data does not exist?
-_DATADIR = os.path.dirname(os.path.dirname(__file__)[:-1])+'/data'
+_DATADIR = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), '../../', 'data'))
 
 
 def load_mwsc():
