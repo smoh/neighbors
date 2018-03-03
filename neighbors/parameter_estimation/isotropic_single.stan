@@ -54,7 +54,6 @@ transformed parameters {
     D[i,2,2] = D[i,2,2] + sigv^2 / d[i]^2 / 4.74^2;
     D[i,3,3] = D[i,3,3] + sigv^2 / d[i]^2 / 4.74^2;
   }
-  //print(D)
 
   for(i in 1:N) {
     tmp[i][1] = 1./d[i];
@@ -68,17 +67,14 @@ model {
   for(i in 1:N) {
     d[i] ~ constdens();
   }
-  // v0 is a vector -- stan knows normal is multidimensional
-  // automagically?
+  // v0 is a vector -- stan knows normal is multidimensional automagically?
   v0 ~ normal(0, 30);
   sigv ~ uniform(0., 50);
-
 
   // likelihood
   for(i in 1:N) {
     a[i] ~ multi_normal(tmp[i], D[i]);
   }
-
 }
 
 generated quantities {
@@ -91,4 +87,3 @@ generated quantities {
     vi[i][3] = cos(dec[i])*cos(ra[i])*v0[1] + cos(dec[i])*sin(ra[i])*v0[2] + sin(dec[i])*v0[3];
   }
 }
-
