@@ -1,0 +1,3 @@
+'''
+Module for visualization routines
+'''
