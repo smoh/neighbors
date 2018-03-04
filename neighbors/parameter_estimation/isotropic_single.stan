@@ -46,23 +46,18 @@ parameters {
 }
 
 transformed parameters {
-  cov_matrix[3] D[N];       // modified covariance matrix
-  vector[3] tmp[N];
+  vector[3] a_model[N];
 
   for(i in 1:N) {
-    D[i] = C[i];
-    D[i,2,2] = D[i,2,2] + sigv^2 / d[i]^2 / 4.74^2;
-    D[i,3,3] = D[i,3,3] + sigv^2 / d[i]^2 / 4.74^2;
-  }
-
-  for(i in 1:N) {
-    tmp[i][1] = 1./d[i];
-    tmp[i][2] = M[i,1] * v0 / d[i] / 4.74;
-    tmp[i][3] = M[i,2] * v0 / d[i] / 4.74;
+    a_model[i][1] = 1./d[i];
+    a_model[i][2] = M[i,1] * v0 / d[i] / 4.74;
+    a_model[i][3] = M[i,2] * v0 / d[i] / 4.74;
   }
 }
 
 model {
+  matrix[3,3] D[N];       // modified covariance matrix
+
   // priors
   for(i in 1:N) {
     d[i] ~ constdens();
@@ -73,7 +68,13 @@ model {
 
   // likelihood
   for(i in 1:N) {
-    a[i] ~ multi_normal(tmp[i], D[i]);
+    D[i] = C[i];
+    D[i,2,2] = D[i,2,2] + sigv^2 / d[i]^2 / 4.74^2;
+    D[i,3,3] = D[i,3,3] + sigv^2 / d[i]^2 / 4.74^2;
+  }
+
+  for(i in 1:N) {
+    a[i] ~ multi_normal(a_model[i], D[i]);
   }
 }
 
