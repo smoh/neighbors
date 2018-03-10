@@ -5,13 +5,13 @@ import numpy as np
 import astropy.units as u
 import astropy.constants as c
 
-from .tools import get_projection_matrix
+from .tools import get_projection_matrix,
+                   sample_uniform_sphere,
+                   sample_on_sphere,
+                   xyz_to_rradec
 
 __all__ = [
     'sample_powerlaw',
-    'sample_uniform_sphere',
-    'sample_on_sphere',
-    'xyz_to_rradec',
     'BinarySampler'
 ]
 
@@ -61,42 +61,6 @@ def sample_uniform_sphere(rmax, size=1):
     U = np.random.uniform(size=size)
     x = np.random.normal(size=(size,3))
     return rmax*U[:,None]**(1./3.)*x/np.linalg.norm(x,axis=1)[:,None]
-
-
-def sample_on_sphere(size=1):
-    """
-    Randomly sample points on a unit sphere (i.e., random direction)
-
-    size : int, optional, default: 1
-        number of samples
-
-    Returns (X,Y,Z) of vectors. The size of all vectors is unity.
-
-    See also:
-    http://stackoverflow.com/questions/5408276/python-uniform-spherical-distribution
-    """
-    phi = np.random.uniform(0,np.pi*2, size=size)
-    costheta = np.random.uniform(-1,1, size=size)
-    theta = np.arccos(costheta)
-    x = np.sin(theta) * np.cos(phi)
-    y = np.sin(theta) * np.sin(phi)
-    z = np.cos(theta)
-    return x, y, z
-
-
-def xyz_to_rradec(x, y, z):
-    """
-    Transform rectangular coordinates to spherical coordinates (r, ra, dec)
-
-    Note that the only difference with usual spherical coordinates is that
-    the angle *dec* is 0 at z=0, and lies between -pi/2 to pi/2.
-
-    Returns (r, ra, dec); ra, dec in radians.
-    """
-    r = np.sqrt(x**2 + y**2 + z**2)
-    dec = np.arcsin(z/r)
-    ra = (np.arctan2(y, x) + 2*np.pi) % (2*np.pi)
-    return r, ra, dec
 
 
 class BinarySampler(object):
