@@ -106,3 +106,21 @@ def deproject_at_position(vrec, ra, dec):
     Returns [vx, vy, vz]
     """
     return get_projection_matrix(ra, dec).T.dot(vrec)
+
+
+def make_cov(d):
+    """
+    Generate (parallax, pmra, pmdec) covariance matrix
+    from Gaia data for a single star
+    """
+    cov = np.zeros([3,3])
+    cov[0,0] = d['parallax_error']**2
+    cov[1,1] = d['pmra_error']**2
+    cov[2,2] = d['pmdec_error']**2
+    cov[0,1] = d['parallax_pmra_corr'] * d['parallax_error'] * d['pmra_error']
+    cov[0,2] = d['parallax_pmdec_corr'] * d['parallax_error'] * d['pmdec_error']
+    cov[1,2] = d['pmra_pmdec_corr'] * d['pmra_error'] * d['pmdec_error']
+    cov[1,0] = d['parallax_pmra_corr'] * d['parallax_error'] * d['pmra_error']
+    cov[2,0] = d['parallax_pmdec_corr'] * d['parallax_error'] * d['pmdec_error']
+    cov[2,1] = d['pmra_pmdec_corr'] * d['pmra_error'] * d['pmdec_error']
+    return cov
