@@ -16,8 +16,8 @@ data {
   int<lower=2> N;     // number of stars
 
   // Units:
-  //  ra [rad]
-  //  dec [rad]
+  //  ra [deg]
+  //  dec [deg]
   //  parallax [mas]
   //  pmra [mas/yr]
   //  pmdec [mas/yr]
@@ -29,13 +29,20 @@ data {
 
 transformed data {
   matrix[2,3] M[N];      // to equitorial rectangular coordinates
+  real ra_rad[N];
+  real dec_rad[N];
+  for (i in 1:N) {
+    ra_rad[i] = ra[i] * pi() / 180.;
+    dec_rad[i] = dec[i] * pi() / 180.;
+  }
+
   for(i in 1:N) {
-    M[i,1,1] = -sin(ra[i]);
-    M[i,1,2] =  cos(ra[i]);
+    M[i,1,1] = -sin(ra_rad[i]);
+    M[i,1,2] =  cos(ra_rad[i]);
     M[i,1,3] = 0.;
-    M[i,2,1] = -sin(dec[i])*cos(ra[i]);
-    M[i,2,2] = -sin(dec[i])*sin(ra[i]);
-    M[i,2,3] = cos(dec[i]);
+    M[i,2,1] = -sin(dec_rad[i])*cos(ra_rad[i]);
+    M[i,2,2] = -sin(dec_rad[i])*sin(ra_rad[i]);
+    M[i,2,3] = cos(dec_rad[i]);
   }
 }
 
@@ -85,6 +92,6 @@ generated quantities {
   for(i in 1:N) {
     vi[i][1] = M[i,1] * v0 / d[i] / 4.74;
     vi[i][2] = M[i,2] * v0 / d[i] / 4.74;
-    vi[i][3] = cos(dec[i])*cos(ra[i])*v0[1] + cos(dec[i])*sin(ra[i])*v0[2] + sin(dec[i])*v0[3];
+    vi[i][3] = cos(dec_rad[i])*cos(ra_rad[i])*v0[1] + cos(dec_rad[i])*sin(ra_rad[i])*v0[2] + sin(dec_rad[i])*v0[3];
   }
 }
