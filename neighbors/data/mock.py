@@ -20,8 +20,8 @@ class MockGroup(object):
             (x, y, z) of reference position
         v_ref : tuple
             mean velocity (vx, vy, vz) of the group
-        sigv : float
-            isotropic velocity dispersion
+        sigv : float, 3-tuple, or (3, 3) matrix
+            velocity dispersion
         rmax : float
             maximum physical size
         """
@@ -35,7 +35,17 @@ class MockGroup(object):
         xr, yr, zr = x_ref
         vx, vy, vz = v_ref
 
-        vi = np.random.multivariate_normal([vx, vy, vz], np.eye(3)*sigv**2, size=N)
+        if np.ndim(sigv) == 0:
+            sigv = np.eye(3)*sigv**2
+        elif np.ndim(sigv) == 1:
+            if not np.shape(sigv)[0] == 3:
+                raise ValueError("Invalid shape for sigv")
+            sigv = np.diag(sigv)
+        elif np.ndim(sigv) == 2:
+            if not np.shape(sigv) == (3, 3):
+                raise ValueError("Invalid shape for sigv")
+
+        vi = np.random.multivariate_normal([vx, vy, vz], sigv, size=N)
 
         xi, yi, zi = sample_uniform_sphere(rmax, size=N).T
         xi, yi, zi = xi+xr, yi+yr, zi+zr
