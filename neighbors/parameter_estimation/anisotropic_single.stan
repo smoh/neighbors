@@ -64,6 +64,7 @@ transformed parameters {
 }
 
 model {
+  matrix[3,3] D[N];             // modified covariance matrix
 
   // priors
   v0 ~ normal(0, 30);
@@ -73,7 +74,6 @@ model {
     d[i] ~ constdens();
   }
 
-  matrix[3,3] D[N];             // modified covariance matrix
   for(i in 1:N) {
     D[i] = C[i];
   }
