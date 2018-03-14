@@ -69,7 +69,6 @@ model {
   for(i in 1:N) {
     d[i] ~ constdens();
   }
-  // v0 is a vector -- stan knows normal is multidimensional automagically?
   v0 ~ normal(0, 30);
   sigv ~ uniform(0., 50);
 
