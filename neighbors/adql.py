@@ -21,7 +21,9 @@ def check_adql(query, tables=None):
     """
     tableurl = predefined_tables[tables] if tables in predefined_tables\
         else tables
-    payload = dict(query=query, tables=tableurl)
+    #NOTE: if query string starts with "\n", I get an error
+    #'Connection reset by peer'. Unclear why.
+    payload = dict(query=query.strip(), tables=tableurl)
     r = requests.get(
         'http://cdsportal.u-strasbg.fr/adqltuto/adqlvalidate',
         params=payload)
