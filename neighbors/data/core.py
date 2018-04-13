@@ -75,7 +75,10 @@ class TGAS(object):
 
 
 
-class TGASData(object):
+class GaiaData(object):
+    """
+    class represeting Gaia astrometric catalog
+    """
     _unit_map = {
         'ra': u.degree,
         'dec': u.degree,
@@ -89,7 +92,14 @@ class TGASData(object):
         'pmdec_error': u.milliarcsecond/u.year,
     }
 
-    def __init__(self, filename_or_data, rv=None, rv_err=None):
+    def __init__(self, data, rv=None, rv_err=None):
+        """
+        data : pd.DataFrame
+            Astrometric catalog. Must contain following columns:
+                ra, dec, parallax, pmra, pmdec,
+                parallax_error, pmra_error, pmdec_error,
+                parallax_pmra_corr, parallax_pmdec_corr, pmra_pmdec_corr
+        """
 
         # radial velocities
         if rv is not None:
@@ -112,30 +122,22 @@ class TGASData(object):
             self._rv_err = None
 
         # TODO: maybe support memory-mapping here?
-        if isinstance(filename_or_data, six.string_types):
-            self._data = np.array(fits.getdata(filename_or_data, 1))
-
-        else:
-            self._data = np.array(filename_or_data)
+        if not isinstance(data, pd.DataFrame):
+            raise ValueError("data must be pd.DataFrame")
+        self.d = data
 
     def __getattr__(self, name):
         # to prevent recursion errors:
         #   http://nedbatchelder.com/blog/201010/surprising_getattr_recursion.html
-        if name == '_data':
+        if name == 'd':
             raise AttributeError()
-
-        if name in TGASData._unit_map:
-            return self._data[name] * TGASData._unit_map[name]
-
-        elif name in self._data.dtype.names:
-            return self._data[name]
-
+        if name in GaiaData._unit_map:
+            return self.d[name].values * GaiaData._unit_map[name]
         else:
-            raise AttributeError("Object {} has no attribute '{}' and source data "
-                                 "table has no column with that name.".format(self, name))
+            return self.d[name]
 
     def __getitem__(self, slc):
-        sliced = self._data[slc]
+        sliced = self.d[slc]
 
         if self._rv_err is not None:
             rv = self._rv[slc]
@@ -148,29 +150,14 @@ class TGASData(object):
             return TGASStar(row=sliced, rv=rv, rv_err=rv_err)
 
         else: # many rows
-            return TGASData(sliced, rv=rv, rv_err=rv_err)
+            return GaiaData(sliced, rv=rv, rv_err=rv_err)
 
     def __len__(self):
-        return len(self._data)
+        return len(self.d)
 
     @property
     def rv(self):
         return self._rv*u.km/u.s
-
-    # Other convenience methods
-    def get_distance(self, lutz_kelker=True):
-        """
-        Return the distance with or without the Lutz-Kelker correction.
-        """
-
-        if lutz_kelker:
-            snr = self._data['parallax'] / self._data['parallax_error']
-            tmp = self._data['parallax'] * (0.5 + 0.5*np.sqrt(1 - 16/snr**2))
-
-        else:
-            tmp = self._data['parallax']
-
-        return 1000./tmp * u.pc
 
     def get_vtan(self, lutz_kelker=True):
         """
@@ -182,7 +169,8 @@ class TGASData(object):
         vdec = (self.pmdec * d).to(u.km/u.s, u.dimensionless_angles()).value
         return np.vstack((vra, vdec)).T * u.km/u.s
 
-    def get_coord(self, lutz_kelker=True):
+    @cached_property
+    def coords(self):
         """
         Return an `~astropy.coordinates.SkyCoord` object to represent
         all coordinates.
@@ -191,8 +179,21 @@ class TGASData(object):
                               distance=self.get_distance(lutz_kelker=lutz_kelker))
 
     @property
+    def distance_modulus(self):
+        """
+        distance modulus DM = m - M
+        """
+        return 5*np.log10(self.parallax.to(u.pc, u.parallax())/10*u.pc)
+
+    @property
     def parallax_snr(self):
         return self.parallax / self.parallax_error
+
+    @classmethod
+    def from_fits(cls, filename):
+        #TODO
+        pass
+
 
 
 class TGASStar(TGASData):
