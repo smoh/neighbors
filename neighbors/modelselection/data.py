@@ -7,7 +7,7 @@ __all__ = ['data_to_vec_cov']
 
 def data_to_vec_cov(gaia_data):
     """
-    Convert the input `comoving.GaiaData` object into raw data and covariance
+    Convert the input ``GaiaData`` object into raw data and covariance
     arrays to be used in the comoving star analysis.
     """
     if not gaia_data._has_rv:
