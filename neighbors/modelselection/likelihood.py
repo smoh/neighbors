@@ -6,7 +6,7 @@ from scipy.special import logsumexp
 # Project
 from .linalg import get_y_Cinv, get_M, get_Ainv_nu_Delta
 
-__all__ = ['FML_helper', 'ln_Q']
+__all__ = ['FML_helper', 'ln_marg_v_likelihood']
 
 
 def FML_helper(d, data, Cov, Vinv, v_scatter):
@@ -48,7 +48,7 @@ def FML_helper(d, data, Cov, Vinv, v_scatter):
     return 0.5*log_detA - Delta
 
 
-def ln_Q(d, data, Cov, Vinvs, prior_weights, v_scatter=0.,):
+def ln_marg_v_likelihood(d, data, Cov, Vinvs, prior_weights, v_scatter=0.,):
     """
     Marginalized over true v.
 
