@@ -48,7 +48,7 @@ def FML_helper(d, data, Cov, Vinv, v_scatter):
     return 0.5*log_detA - Delta
 
 
-def ln_marg_v_likelihood(d, data, Cov, Vinvs, prior_weights, v_scatter=0.,):
+def ln_marg_v_likelihood(d, data, Cov, prior, v_scatter=0.,):
     """
     Marginalized over true v.
 
@@ -63,11 +63,15 @@ def ln_marg_v_likelihood(d, data, Cov, Vinvs, prior_weights, v_scatter=0.,):
     Cov : `numpy.ndarray`
         Should have shape ``(nstars, 6, 6)``: full covariance matrix for
         each star. Units should match units of ``data``.
-    Vinv : `numpy.ndarray`
-        Should have shape ``(nprior, 3, 3)`` and units [1/(km**2/s**2)]: this is
-        the inverse variance matrix for the mixture-of-Gaussians prior for the
-        velocity distribution. ``nprior`` is the number of components in the
-        Gaussian mixture.
+    prior : dict
+        For now, this is just a dictionary that contains information needed for
+        the velocity prior. This should contain keys: 'Vinvs' and 'weights'.
+        These are the inverse variance matrix for the mixture-of-Gaussians prior
+        for the velocity distribution, and the weights for each mixture
+        component (these should sum to 1).
+    v_scatter : numeric [km/s]
+        Velocity tolerance in what we call "comoving."
     """
     return logsumexp([FML_helper(d, data, Cov, Vinv, v_scatter)
-                      for Vinv in Vinvs], b=prior_weights)
+                      for Vinv in prior['Vinvs']],
+                     b=prior['weights'])
