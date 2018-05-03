@@ -6,7 +6,6 @@ import os
 import numpy as np
 import pandas as pd
 
-import fitsio
 from astropy.table import Table
 import astropy.coordinates as coord
 import astropy.units as u
@@ -52,6 +51,7 @@ def load_tgas(columns='default'):
       Set to `None` to get all columns
       Set to 'default' to get astrometry-related columns only
     """
+    import fitsio
     if columns == 'default':
         columns = ['hip', 'tycho2_id', 'source_id',
                    'ra', 'dec', 'parallax', 'pmra', 'pmdec',
